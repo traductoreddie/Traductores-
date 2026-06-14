@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Traductor de Viaje</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Noto+Sans:wght@400;600&display=swap');
+:root{--bg:#0f1117;--sur:#1a1d27;--card:#21253a;--ac:#5b8fff;--ac2:#ff7a59;--tx:#eef0f8;--mu:#8891b0;--bd:#2e3352;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:14px 13px 40px;}
+header{text-align:center;margin-bottom:18px;}
+h1{font-size:1.4rem;font-weight:700;letter-spacing:-.02em;margin-top:3px;}
+h1 span{color:var(--ac);}
+.sub{color:var(--mu);font-size:.78rem;margin-top:3px;}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:15px;width:100%;max-width:500px;margin-bottom:11px;}
+.lbl{font-size:.63rem;font-weight:700;letter-spacing:.12em;color:var(--ac);text-transform:uppercase;margin-bottom:7px;}
+textarea{display:block;width:100%;background:var(--sur);border:1px solid var(--bd);border-radius:9px;color:var(--tx);font-family:'Noto Sans',sans-serif;font-size:.93rem;padding:11px 13px;resize:none;height:88px;outline:none;transition:border-color .2s;}
+textarea:focus{border-color:var(--ac);}
+textarea::placeholder{color:var(--mu);}
+.hint{font-size:.67rem;color:var(--mu);margin-top:4px;min-height:13px;}
+.hint.live{color:#ff6060;}
+.row{display:flex;gap:7px;margin-top:9px;width:100%;}
+button{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:.83rem;border:none;border-radius:9px;padding:10px 13px;cursor:pointer;transition:all .18s;display:inline-flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap;flex-shrink:0;}
+.bp{background:var(--ac);color:#fff;flex:1;}
+.bp:hover{background:#3f60c8;}
+.bp:disabled{background:var(--bd);color:var(--mu);cursor:not-allowed;}
+.bs{background:var(--ac2);color:#fff;}
+.bs:hover{background:#d95f38;}
+.bs:disabled{background:var(--bd);color:var(--mu);cursor:not-allowed;}
+.bg{background:var(--sur);border:1px solid var(--bd);color:var(--mu);}
+.bg:hover{color:var(--tx);border-color:var(--mu);}
+.bm{background:var(--sur);border:2px solid var(--bd);color:var(--tx);padding:9px 12px;font-size:.95rem;border-radius:9px;}
+.bm:hover{border-color:var(--ac);}
+.bm.rec{border-color:#ff4444;color:#ff4444;background:rgba(255,68,68,.1);animation:pr 1s ease-in-out infinite;}
+@keyframes pr{0%,100%{box-shadow:0 0 0 0 rgba(255,68,68,.5);}50%{box-shadow:0 0 0 6px rgba(255,68,68,0);}}
+.rbox{background:var(--sur);border:1px solid var(--bd);border-radius:9px;padding:12px;min-height:50px;font-family:'Noto Sans',sans-serif;font-size:.93rem;line-height:1.6;white-space:pre-wrap;word-break:break-word;color:var(--tx);}
+.badge{display:inline-block;background:var(--ac);color:#fff;font-size:.63rem;font-weight:700;padding:2px 9px;border-radius:20px;letter-spacing:.08em;margin-bottom:7px;}
+.da span{display:inline-block;width:5px;height:5px;background:currentColor;border-radius:50%;margin:0 2px;animation:db .9s infinite ease-in-out;}
+.da span:nth-child(2){animation-delay:.15s;}
+.da span:nth-child(3){animation-delay:.3s;}
+@keyframes db{0%,100%{transform:translateY(0);}50%{transform:translateY(-4px);}}
+.dv{display:flex;align-items:center;gap:8px;color:var(--mu);font-size:.7rem;margin:2px 0;width:100%;max-width:500px;}
+.dv::before,.dv::after{content:'';flex:1;height:1px;background:var(--bd);}
+.err{color:#ff6b6b;font-size:.79rem;margin-top:6px;}
+.hidden{display:none!important;}
+.foot{color:var(--mu);font-size:.66rem;text-align:center;margin-top:4px;max-width:400px;line-height:1.5;}
+.info{background:rgba(91,143,255,.07);border:1px solid rgba(91,143,255,.2);border-radius:9px;padding:9px 12px;font-size:.75rem;color:#9ab4ff;margin-bottom:11px;line-height:1.5;width:100%;max-width:500px;display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
+.info button{background:transparent;border:none;color:#9ab4ff;cursor:pointer;font-size:.9rem;padding:0;flex-shrink:0;}
+</style>
+</head>
+<body>
+
+<header>
+  <div style="font-size:2rem;">🌍</div>
+  <h1>Traductor de <span>Viaje</span></h1>
+  <p class="sub">Detecta · Traduce · Habla</p>
+</header>
+
+<div class="info" id="infoBar">
+  <span>🎙️ El micrófono y la voz funcionan abriendo este archivo en <strong>Chrome</strong> de tu celular. Aquí solo funciona texto.</span>
+  <button onclick="document.getElementById('infoBar').classList.add('hidden')">✕</button>
+</div>
+
+<!-- BLOQUE 1 -->
+<div class="card">
+  <div class="lbl">📥 Lo que me dicen</div>
+  <textarea id="t1" placeholder="Escribe o pega el texto aquí…"></textarea>
+  <div class="hint" id="h1" style="display:none;"></div>
+  <div class="row">
+    <button class="bm" id="m1" onclick="toggleMic('input')" title="Micrófono">🎙️</button>
+    <button class="bp" id="btnTr" onclick="doTranslate()">🔍 Identificar y Traducir</button>
+    <button class="bg" onclick="clearAll()">✕</button>
+  </div>
+  <div class="err hidden" id="errMsg"></div>
+</div>
+
+<!-- BLOQUE 2 -->
+<div class="card hidden" id="c2">
+  <div class="lbl">🌐 Idioma detectado</div>
+  <div class="badge" id="badge1">—</div>
+  <div class="lbl" style="margin-top:9px;">📋 Traducción al Español Latino</div>
+  <div class="rbox" id="r1">—</div>
+  <div class="row">
+    <button class="bs" id="btnSpk1" onclick="tts('es')">🔊 Escuchar en Español</button>
+    <button class="bg" onclick="cp('r1')">📋</button>
+  </div>
+</div>
+
+<div class="dv hidden" id="dv2">Mi respuesta</div>
+
+<!-- BLOQUE 3 -->
+<div class="card hidden" id="c3">
+  <div class="lbl">✍️ Mi respuesta (en Español)</div>
+  <textarea id="t2" placeholder="Escribe tu respuesta en español…" style="height:76px;"></textarea>
+  <div class="hint" id="h2" style="display:none;"></div>
+  <div class="row">
+    <button class="bm" id="m2" onclick="toggleMic('resp')" title="Dictar en español">🎙️</button>
+    <button class="bp" id="btnRe" onclick="doRespTranslate()">🔄 Traducir mi respuesta</button>
+  </div>
+</div>
+
+<!-- BLOQUE 4 -->
+<div class="card hidden" id="c4">
+  <div class="lbl">💬 Tu respuesta en <span class="badge" id="badge2" style="margin-left:5px;margin-bottom:0;">—</span></div>
+  <div class="rbox" id="r2">—</div>
+  <div class="row">
+    <button class="bs" id="btnSpk2" onclick="tts('foreign')">🔊 Escuchar en su idioma</button>
+    <button class="bg" onclick="cp('r2')">📋</button>
+  </div>
+</div>
+
+<p class="foot">Powered by Claude AI · +100 idiomas</p>
+
+<script>
+// ── Estado ──
+var dLang='', dCode='en', fText='', recog=null, aTgt=null;
+
+// ── Detección segura de APIs del navegador ──
+var hasSR = (function(){
+  try { return !!(window.SpeechRecognition || window.webkitSpeechRecognition); }
+  catch(e){ return false; }
+})();
+
+var hasTTS = (function(){
+  try { return !!(window.speechSynthesis); }
+  catch(e){ return false; }
+})();
+
+// Actualizar UI según capacidades
+if(!hasSR){
+  document.getElementById('m1').disabled = true;
+  document.getElementById('m1').title = 'Micrófono no disponible en este contexto';
+  document.getElementById('m2').disabled = true;
+  document.getElementById('m2').title = 'Micrófono no disponible en este contexto';
+  document.getElementById('m1').style.opacity = '0.4';
+  document.getElementById('m2').style.opacity = '0.4';
+}
+
+if(!hasTTS){
+  document.getElementById('btnSpk1').disabled = true;
+  document.getElementById('btnSpk1').title = 'Voz no disponible en este contexto';
+  document.getElementById('btnSpk2').disabled = true;
+  document.getElementById('btnSpk2').title = 'Voz no disponible en este contexto';
+  document.getElementById('btnSpk1').style.opacity = '0.4';
+  document.getElementById('btnSpk2').style.opacity = '0.4';
+}
+
+// ── Micrófono ──
+function toggleMic(tgt){
+  if(!hasSR){ alert('Micrófono no disponible.\nAbre el archivo en Chrome para usarlo.'); return; }
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(recog && aTgt===tgt){ recog.stop(); return; }
+  if(recog){ try{ recog.abort(); }catch(e){} }
+  aTgt = tgt;
+  var isIn = tgt==='input';
+  var btn  = document.getElementById(isIn?'m1':'m2');
+  var hint = document.getElementById(isIn?'h1':'h2');
+  var ta   = document.getElementById(isIn?'t1':'t2');
+  try{
+    recog = new SR();
+    recog.continuous = true;
+    recog.interimResults = true;
+    recog.lang = isIn ? '' : 'es-419';
+    var final = ta.value;
+    recog.onstart = function(){
+      btn.classList.add('rec'); btn.textContent='⏹️';
+      hint.textContent='🔴 Grabando… toca ⏹️ para detener';
+      hint.style.display='block'; hint.classList.add('live');
+    };
+    recog.onresult = function(e){
+      var interim='';
+      for(var i=e.resultIndex;i<e.results.length;i++){
+        var t=e.results[i][0].transcript;
+        if(e.results[i].isFinal){ final+=(final?' ':'')+t; }
+        else{ interim+=t; }
+      }
+      ta.value = final+(interim?' '+interim:'');
+    };
+    recog.onerror = function(e){
+      var msgs={'not-allowed':'⚠️ Permiso denegado','no-speech':'Sin audio detectado'};
+      hint.textContent = msgs[e.error]||('Error: '+e.error);
+      hint.style.display='block';
+      resetMic(btn,hint,isIn);
+    };
+    recog.onend = function(){ resetMic(btn,hint,isIn); recog=null; aTgt=null; };
+    recog.start();
+  }catch(e){ alert('Error al iniciar micrófono: '+e.message); recog=null; aTgt=null; }
+}
+
+function resetMic(btn,hint,isIn){
+  btn.classList.remove('rec'); btn.textContent='🎙️';
+  hint.classList.remove('live'); hint.style.display='none';
+}
+
+// ── Traducir lo que me dijeron ──
+async function doTranslate(){
+  var input = document.getElementById('t1').value.trim();
+  if(!input) return;
+  var btn = document.getElementById('btnTr');
+  btn.disabled=true;
+  btn.innerHTML='<span class="da"><span></span><span></span><span></span></span> Analizando…';
+  ['c2','c3','c4','dv2'].forEach(function(id){ hide(id); });
+  hide('errMsg');
+  try{
+    var res = await api(
+      'Eres experto en idiomas para viajeros. Responde SOLO JSON sin backticks ni texto extra:\n{"idioma_nombre":"nombre del idioma en español","idioma_codigo":"código BCP-47 ej: fr de ja zh ar","traduccion_espanol":"traducción fiel al español latino","notas":"nota cultural breve o null"}',
+      'Identifica el idioma y traduce al español latino: "'+input+'"'
+    );
+    dLang = res.idioma_nombre;
+    dCode = res.idioma_codigo;
+    document.getElementById('badge1').textContent = '🌐 '+res.idioma_nombre.toUpperCase();
+    document.getElementById('r1').textContent = res.traduccion_espanol + (res.notas ? '\n\n📌 '+res.notas : '');
+    show('c2'); show('dv2'); show('c3');
+  }catch(e){
+    document.getElementById('errMsg').textContent = e.message||'Error de conexión. Intenta de nuevo.';
+    show('errMsg');
+  }
+  btn.disabled=false; btn.innerHTML='🔍 Identificar y Traducir';
+}
+
+// ── Traducir mi respuesta ──
+async function doRespTranslate(){
+  var myText = document.getElementById('t2').value.trim();
+  if(!myText||!dLang) return;
+  var btn = document.getElementById('btnRe');
+  btn.disabled=true;
+  btn.innerHTML='<span class="da"><span></span><span></span><span></span></span> Traduciendo…';
+  hide('c4');
+  try{
+    var res = await api(
+      'Eres experto en traducción. Responde SOLO JSON sin backticks:\n{"traduccion":"texto en idioma destino","pronunciacion":"fonética aproximada en letras latinas si el idioma no usa alfabeto latino, si no null"}',
+      'Traduce del español al '+dLang+' (código '+dCode+'): "'+myText+'"'
+    );
+    fText = res.traduccion;
+    document.getElementById('badge2').textContent = dLang.toUpperCase();
+    document.getElementById('r2').textContent = res.traduccion+(res.pronunciacion?'\n\n🗣 '+res.pronunciacion:'');
+    show('c4');
+  }catch(e){ alert('Error: '+e.message); }
+  btn.disabled=false; btn.innerHTML='🔄 Traducir mi respuesta';
+}
+
+// ── API Claude ──
+async function api(sys, msg){
+  var r = await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      model:'claude-sonnet-4-6',
+      max_tokens:1000,
+      system:sys,
+      messages:[{role:'user',content:msg}]
+    })
+  });
+  if(!r.ok) throw new Error('Error HTTP '+r.status);
+  var d = await r.json();
+  if(d.error) throw new Error(d.error.message||'Error de API');
+  var raw = d.content.filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('');
+  raw = raw.replace(/```json[\s\S]*?```|```[\s\S]*?```/g, function(m){ return m.replace(/```json|```/g,''); }).trim();
+  return JSON.parse(raw);
+}
+
+// ── Voz (TTS) ──
+function tts(tgt){
+  if(!hasTTS){ alert('Síntesis de voz no disponible.\nAbre el archivo en Chrome para escuchar.'); return; }
+  var text = tgt==='es'
+    ? document.getElementById('r1').textContent.split('\n\n📌')[0]
+    : fText;
+  var lang = tgt==='es' ? 'es-419' : dCode;
+  if(!text) return;
+  try{
+    window.speechSynthesis.cancel();
+    var u = new SpeechSynthesisUtterance(text);
+    u.lang=lang; u.rate=0.88;
+    var voices = window.speechSynthesis.getVoices();
+    var v = voices.find(function(x){ return x.lang.startsWith(lang.split('-')[0]); });
+    if(v) u.voice=v;
+    window.speechSynthesis.speak(u);
+  }catch(e){ alert('Error de voz: '+e.message); }
+}
+
+// ── Utilidades ──
+function cp(id){
+  try{ navigator.clipboard.writeText(document.getElementById(id).textContent); }
+  catch(e){}
+}
+function show(id){ document.getElementById(id).classList.remove('hidden'); }
+function hide(id){ document.getElementById(id).classList.add('hidden'); }
+
+function clearAll(){
+  if(recog){ try{recog.abort();}catch(e){} recog=null; aTgt=null; }
+  document.getElementById('t1').value='';
+  document.getElementById('t2').value='';
+  ['c2','c3','c4','dv2','errMsg'].forEach(hide);
+  ['m1','m2'].forEach(function(id){
+    var b=document.getElementById(id);
+    b.classList.remove('rec'); b.textContent='🎙️';
+  });
+  ['h1','h2'].forEach(function(id){
+    var h=document.getElementById(id);
+    h.style.display='none'; h.classList.remove('live');
+  });
+  dLang=''; dCode='en'; fText='';
+  if(hasTTS){ try{ window.speechSynthesis.cancel(); }catch(e){} }
+}
+
+// Cargar voces solo si TTS disponible
+if(hasTTS){
+  try{ window.speechSynthesis.onvoiceschanged = function(){ window.speechSynthesis.getVoices(); }; }
+  catch(e){}
+}
+</script>
+</body>
+</html>
